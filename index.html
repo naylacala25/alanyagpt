@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>AlanyaGPT</title>
+<meta name="theme-color" content="#3b2418">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AlanyaGPT">
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+  :root { --cacao:#3b2418; --crema:#f7f1e8; --caramelo:#c4842f; --verde:#2e7d4f; --rojo:#b3261e; --gris:#6f6760; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system, Roboto, Arial, sans-serif; background:var(--crema); color:#231a14; }
+  .wrap { max-width:480px; margin:0 auto; padding:20px 16px 40px; }
+  h1 { font-size:26px; margin:4px 0 2px; color:var(--cacao); }
+  .sub { color:var(--gris); font-size:14px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; }
+  .sub button { background:none; border:0; color:var(--cacao); text-decoration:underline; font-size:14px; cursor:pointer; padding:4px; }
+  .btn { display:block; width:100%; border:0; border-radius:14px; padding:18px; font-size:19px; font-weight:600; cursor:pointer; }
+  .primario { background:var(--cacao); color:#fff; }
+  .btn:disabled { opacity:.4; cursor:default; }
+  .camara { font-size:22px; padding:24px; }
+  .secundario { background:#fff; color:var(--cacao); border:2px solid var(--cacao); margin-top:12px; padding:14px; font-size:17px; }
+  .enviar { background:var(--verde); color:#fff; margin-top:14px; }
+  .nota { font-size:14px; color:#5f5750; margin:10px 2px 0; line-height:1.45; }
+  .nota b { color:#231a14; }
+  input[type=password] { width:100%; padding:14px; font-size:18px; border:1px solid #ccc; border-radius:12px; margin:8px 0 14px; }
+  label.t { font-size:14px; color:#555; }
+  .titulo { font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--gris); margin:20px 0 10px; display:flex; justify-content:space-between; }
+  .nombres, .momentos { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .opcion { background:#fff; border:2px solid #e3d8cc; border-radius:14px; padding:16px 12px; font-size:17px; font-weight:600; color:var(--cacao); cursor:pointer; text-align:left; }
+  .opcion small { display:block; font-weight:400; font-size:13px; color:var(--gris); margin-top:3px; }
+  .opcion.on { border-color:var(--cacao); background:var(--cacao); color:#fff; }
+  .opcion.on small { color:#e9dccd; }
+  .opcion.hecho:not(.on) { border-color:#b9d8c4; }
+  .caja { background:#fff; border-radius:16px; padding:16px; border:2px solid var(--cacao); margin-top:14px; }
+  .caja .ayuda { font-size:15px; color:#555; margin:0 0 14px; line-height:1.45; }
+  .caja .ayuda b { color:#231a14; }
+  .bandeja { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .mini { position:relative; width:74px; height:74px; border-radius:10px; overflow:hidden; background:#eee; }
+  .mini img { width:100%; height:100%; object-fit:cover; }
+  .mini .n { position:absolute; left:4px; bottom:4px; background:rgba(0,0,0,.65); color:#fff; font-size:12px; font-weight:700; border-radius:6px; padding:1px 6px; }
+  .mini button { position:absolute; top:3px; right:3px; width:24px; height:24px; border-radius:50%; border:0; background:rgba(0,0,0,.6); color:#fff; font-size:14px; line-height:24px; padding:0; cursor:pointer; }
+  .vacia { font-size:14px; color:#999; margin-top:10px; }
+  .oculto { display:none !important; }
+  .rush { display:flex; align-items:center; gap:12px; background:#fff; border-radius:14px; padding:12px 14px; cursor:pointer; border:2px solid #e3d8cc; }
+  .rush.on { border-color:var(--caramelo); background:#fdf5e6; }
+  .rush input { position:absolute; opacity:0; width:1px; height:1px; }
+  .rush .riel { flex:none; position:relative; width:52px; height:30px; border-radius:15px; background:#cfc4b8; transition:background .2s; }
+  .rush.on .riel { background:var(--caramelo); }
+  .rush .bola { position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff; transition:transform .2s; }
+  .rush.on .bola { transform:translateX(22px); }
+  .rush b { display:block; font-size:16px; }
+  .rush small { display:block; font-size:13px; color:#666; margin-top:2px; }
+  .rush input:focus-visible + .riel, .opcion:focus-visible, .btn:focus-visible { outline:3px solid var(--caramelo); outline-offset:2px; }
+  .error { color:var(--rojo); font-size:14px; margin-top:8px; }
+  .alerta { position:sticky; top:0; z-index:5; background:var(--rojo); color:#fff; border-radius:14px; padding:14px 16px; margin-bottom:14px; font-size:17px; font-weight:600; cursor:pointer; }
+  .alerta small { display:block; font-weight:400; font-size:14px; opacity:.9; margin-top:2px; }
+  .item { background:#fff; border-radius:14px; padding:12px 14px; margin-bottom:8px; border:2px solid transparent; }
+  .item.rojo { border-color:var(--rojo); background:#fde0e0; }
+  .item.ambar { border-color:var(--caramelo); background:#fdf0d8; }
+  .item.verde { background:#eef7f1; }
+  .fila { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:15px; }
+  .estado { font-size:14px; font-weight:600; white-space:nowrap; }
+  .item ul { margin:8px 0 0; padding-left:20px; font-size:15px; }
+  .item .acciones { display:flex; gap:8px; margin-top:10px; }
+  .item .acciones button { flex:1; border:0; border-radius:10px; padding:12px 8px; font-size:15px; font-weight:600; cursor:pointer; background:var(--cacao); color:#fff; }
+  .item .acciones button.suave { background:#fff; color:var(--cacao); border:2px solid var(--cacao); }
+  #visor { position:fixed; inset:0; z-index:50; background:#000; display:flex; flex-direction:column; }
+  #visor video { flex:1; width:100%; min-height:0; object-fit:cover; background:#000; }
+  #visor .arriba { position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:14px 16px; color:#fff; font-size:16px; font-weight:600; background:linear-gradient(rgba(0,0,0,.55), transparent); }
+  #visor .arriba button { background:rgba(0,0,0,.45); color:#fff; border:0; border-radius:50%; width:44px; height:44px; font-size:22px; cursor:pointer; }
+  #visor .guiaTip { position:absolute; top:64px; left:16px; right:16px; color:#fff; font-size:14px; text-align:center; text-shadow:0 1px 3px #000; }
+  #visor .abajo { background:#000; padding:10px 16px 22px; }
+  #visor .tira { display:flex; gap:6px; overflow-x:auto; min-height:58px; margin-bottom:12px; }
+  #visor .tira img { flex:none; width:52px; height:52px; object-fit:cover; border-radius:8px; border:2px solid #fff; }
+  #visor .controles { display:flex; align-items:center; justify-content:space-between; }
+  #visor .controles .lado { width:76px; }
+  #disparo { width:78px; height:78px; border-radius:50%; border:5px solid #fff; background:rgba(255,255,255,.25); cursor:pointer; padding:0; }
+  #disparo:active { background:#fff; }
+  #listo { width:76px; height:76px; border-radius:50%; border:0; background:var(--verde); color:#fff; font-size:30px; font-weight:700; cursor:pointer; position:relative; }
+  #listo:disabled { opacity:.35; }
+  #listo span { position:absolute; top:-4px; right:-4px; background:#fff; color:var(--verde); border-radius:12px; font-size:14px; padding:2px 8px; }
+  #flash { position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; transition:opacity .15s; }
+  #flash.on { opacity:.7; transition:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🥐 AlanyaGPT</h1>
+  <div class="sub"><span>Alanya El Polo · Conteo por fotos</span><button id="btnQuien" class="oculto" onclick="cambiarQuien()"></button></div>
+  <div id="alerta" class="alerta oculto" onclick="irAlProblema()"></div>
+
+  <!-- PIN -->
+  <div id="pantallaPin" class="oculto">
+    <label class="t" for="pin">PIN del local</label>
+    <input type="password" id="pin" inputmode="numeric" maxlength="6" placeholder="••••">
+    <div id="errorPin" class="error"></div>
+    <button class="btn primario" onclick="guardarPin()">Entrar</button>
+  </div>
+
+  <!-- QUIÉN -->
+  <div id="pantallaQuien" class="oculto">
+    <div class="titulo">¿Quién está contando?</div>
+    <div class="nombres" id="nombres"></div>
+  </div>
+
+  <!-- CONTEO -->
+  <div id="pantallaFoto" class="oculto">
+    <label class="rush" id="rushBox">
+      <input type="checkbox" id="rush" onchange="cambiarModo(this.checked)">
+      <span class="riel"><span class="bola"></span></span>
+      <span><b id="rushTitulo"></b><small id="rushTexto"></small></span>
+    </label>
+
+    <div class="titulo"><span>¿Qué vas a contar?</span><span id="estadoHoy"></span></div>
+    <div class="momentos" id="momentos"></div>
+
+    <input type="file" id="camFoto" accept="image/*" capture="environment" class="oculto" onchange="tomadas(event)">
+    <input type="file" id="galFotos" accept="image/*" multiple class="oculto" onchange="tomadas(event)">
+
+    <div class="caja">
+      <p class="ayuda" id="ayuda">Primero elige qué vas a contar.</p>
+      <button class="btn primario camara" id="btnFoto" onclick="abrirCamara()" disabled>📷 Tomar fotos</button>
+      <p class="nota">Bandejas en una sola capa, separadas por producto, desde arriba. Toma todas seguidas y toca <b>✓</b>. <b>Se envían solas.</b></p>
+      <button class="btn secundario" id="btnGaleria" onclick="abrir('galFotos')" disabled>🖼️ Elegir de la galería</button>
+      <div class="bandeja" id="bandeja"></div>
+      <div class="vacia" id="vacia">Todavía no hay fotos.</div>
+    </div>
+    <button class="btn enviar" id="btnEnviar" onclick="enviarLote()" disabled>✅ Enviar</button>
+    <div id="errorEnvio" class="error"></div>
+
+    <div id="cola"></div>
+  </div>
+</div>
+
+<div id="visor" class="oculto">
+  <video id="video" autoplay playsinline muted></video>
+  <div id="flash"></div>
+  <div class="arriba"><button onclick="cerrarCamara()" aria-label="Cerrar cámara">✕</button><span id="visorCuenta"></span><span style="width:44px"></span></div>
+  <div class="guiaTip" id="guiaTip"></div>
+  <div class="abajo">
+    <div class="tira" id="tira"></div>
+    <div class="controles">
+      <span class="lado"></span>
+      <button id="disparo" onclick="disparar()" aria-label="Tomar foto"></button>
+      <button id="listo" onclick="listoCamara()" aria-label="Enviar fotos" disabled>✓<span id="listoN">0</span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dirección del Apps Script (Implementar → Administrar implementaciones → App web → URL)
+  var URL_APP = 'https://script.google.com/macros/s/AKfycbyp7aVnqEbuWYCbxOD7xu7beHAMSGc5aqnEKJ8PZ9jsgE0jl6IQvMg5lbW7zQhuQJXIzQ/exec';
+
+  var MOMENTOS = [
+    { n: 'Apertura',        ayuda: '<b>Toda la bollería</b> antes de abrir. Es el stock inicial del día.', min: 1 },
+    { n: 'Ingreso',         ayuda: '<b>Los productos que llegaron + una foto de la guía</b>, en el orden que sea.', min: 2 },
+    { n: 'Cambio de turno', ayuda: '<b>Lo que queda en vitrina</b> al entregar el turno.', min: 1 },
+    { n: 'Cierre',          ayuda: '<b>Lo que queda en vitrina</b> al cerrar.', min: 1 },
+    { n: 'Merma',           ayuda: '<b>Solo lo que se bota</b>, separado por producto.', min: 1 }
+  ];
+  var MAX_LOTE = 12, MAX_LADO = 1400;
+  var PIN = null, QUIEN = null, EQUIPO = [], MOMENTO = null, HECHOS = [], REVISION = true;
+  var bandeja = [];
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } }
+  function mostrar(id) { ['pantallaPin', 'pantallaQuien', 'pantallaFoto'].forEach(function (p) { $(p).classList.toggle('oculto', p !== id); }); }
+  function momentoActual() { return MOMENTOS.filter(function (m) { return m.n === MOMENTO; })[0]; }
+
+  function servidor(accion, datos) {
+    datos = datos || {}; datos.accion = accion;
+    return fetch(URL_APP, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(datos) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (!j.ok && j.error) throw new Error(j.error); return j; });
+  }
+
+  // ===== Modo =====
+  function cambiarModo(rush) {
+    REVISION = !rush; ls('alanya_rush', rush ? 'si' : 'no');
+    $('rush').checked = rush; $('rushBox').classList.toggle('on', rush);
+    $('rushTitulo').textContent = rush ? '⚡ Modo rush' : '🔍 Modo revisión';
+    $('rushTexto').textContent = rush ? 'Envías y sigues trabajando; la revisión la hace administración.' : 'Ves lo que contó la IA y suena si hay algo raro.';
+    pintarCola();
+  }
+
+  // ===== Inicio, PIN y quién =====
+  function iniciar() {
+    cambiarModo(ls('alanya_rush') === 'si');
+    PIN = ls('alanya_pin'); QUIEN = ls('alanya_quien');
+    try { EQUIPO = JSON.parse(ls('alanya_equipo') || '[]'); } catch (e) { EQUIPO = []; }
+    if (!PIN) return mostrar('pantallaPin');
+    if (!QUIEN) return pedirQuien();
+    entrar();
+  }
+  function guardarPin() {
+    var v = $('pin').value.trim(), err = $('errorPin');
+    if (!v) { err.textContent = 'Escribe el PIN.'; return; }
+    err.textContent = '';
+    servidor('verificarPin', { pin: v }).then(function (j) {
+      if (!j.ok) { err.textContent = 'PIN incorrecto.'; return; }
+      PIN = v; ls('alanya_pin', v); EQUIPO = j.equipo || []; ls('alanya_equipo', JSON.stringify(EQUIPO));
+      pedirQuien();
+    }).catch(function () { err.textContent = 'Sin conexión. Intenta de nuevo.'; });
+  }
+  function pedirQuien() {
+    $('nombres').innerHTML = EQUIPO.concat(['Otra persona']).map(function (n) {
+      return '<button class="opcion" onclick="elegirQuien(\'' + esc(n).replace(/'/g, '') + '\')">' + esc(n) + '</button>';
+    }).join('');
+    mostrar('pantallaQuien');
+  }
+  function elegirQuien(n) {
+    if (n === 'Otra persona') { n = (prompt('¿Cómo te llamas?') || '').trim(); if (!n) return; }
+    QUIEN = n; ls('alanya_quien', n); entrar();
+  }
+  function cambiarQuien() { ls('alanya_quien', null); QUIEN = null; $('btnQuien').classList.add('oculto'); pedirQuien(); }
+  function entrar() {
+    $('btnQuien').textContent = 'Contando: ' + QUIEN + ' · cambiar'; $('btnQuien').classList.remove('oculto');
+    mostrar('pantallaFoto'); pintarMomentos(); pintarBandeja(); actualizarEstado();
+  }
+  function actualizarEstado() {
+    servidor('estadoDia', { pin: PIN }).then(function (j) {
+      HECHOS = j.r.hechos || [];
+      $('estadoHoy').textContent = j.r.existe ? HECHOS.length + ' de 5 hoy' : 'sin hoja de hoy';
+      pintarMomentos();
+    }).catch(function (e) { if (String(e.message).indexOf('PIN') >= 0) { ls('alanya_pin', null); mostrar('pantallaPin'); } });
+  }
+
+  // ===== Momento =====
+  function pintarMomentos() {
+    $('momentos').innerHTML = MOMENTOS.map(function (m) {
+      var hecho = HECHOS.indexOf(m.n) >= 0;
+      return '<button class="opcion' + (MOMENTO === m.n ? ' on' : '') + (hecho ? ' hecho' : '') + '" onclick="elegirMomento(\'' + m.n + '\')">' +
+        m.n + '<small>' + (hecho ? '✓ ya hay registro hoy' : 'pendiente') + '</small></button>';
+    }).join('');
+  }
+  function elegirMomento(n) {
+    if (bandeja.length && MOMENTO && n !== MOMENTO && !confirm('Tienes fotos sin enviar de ' + MOMENTO + '. ¿Cambiar igual?')) return;
+    MOMENTO = n; $('ayuda').innerHTML = momentoActual().ayuda;
+    $('errorEnvio').textContent = ''; pintarMomentos(); pintarBandeja();
+  }
+  function abrir(id) { $('errorEnvio').textContent = ''; $(id).click(); }
+
+  // ===== Fotos =====
+  function aCanvas(f, w, h) {
+    var k = Math.min(1, MAX_LADO / Math.max(w, h)), c = document.createElement('canvas');
+    c.width = Math.round(w * k); c.height = Math.round(h * k);
+    c.getContext('2d').drawImage(f, 0, 0, c.width, c.height);
+    var url = c.toDataURL('image/jpeg', 0.8); c.width = c.height = 0; return url;
+  }
+  function achicar(a) {
+    if (window.createImageBitmap) {
+      return createImageBitmap(a).then(function (b) {
+        var k = Math.min(1, MAX_LADO / Math.max(b.width, b.height)); if (b.close) b.close();
+        return createImageBitmap(a, { resizeWidth: Math.round(b.width * k), resizeHeight: Math.round(b.height * k), resizeQuality: 'medium' });
+      }).then(function (c) { var u = aCanvas(c, c.width, c.height); if (c.close) c.close(); return u; })
+        .catch(function () { return conImagen(a); });
+    }
+    return conImagen(a);
+  }
+  function conImagen(a) {
+    return new Promise(function (ok, mal) {
+      var e = URL.createObjectURL(a), img = new Image();
+      img.onload = function () { var u = aCanvas(img, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(e); ok(u); };
+      img.onerror = function () { URL.revokeObjectURL(e); mal(); }; img.src = e;
+    });
+  }
+  function tomadas(ev) {
+    var arch = Array.prototype.slice.call(ev.target.files || []); ev.target.value = '';
+    if (!arch.length) return;
+    var espacio = MAX_LOTE - bandeja.length;
+    if (arch.length > espacio) { $('errorEnvio').textContent = 'Máximo ' + MAX_LOTE + ' fotos por envío.'; arch = arch.slice(0, espacio); }
+    arch.sort(function (a, b) { return a.lastModified - b.lastModified; });
+    var cadena = Promise.resolve();
+    arch.forEach(function (f) {
+      cadena = cadena.then(function () {
+        return achicar(f).then(function (u) { bandeja.push({ url: u, t: f.lastModified || Date.now() }); bandeja.sort(function (a, b) { return a.t - b.t; }); pintarBandeja(); },
+          function () { $('errorEnvio').textContent = 'Una foto no se pudo cargar. Cierra otras apps e intenta de nuevo.'; });
+      });
+    });
+  }
+  function quitar(i) { bandeja.splice(i, 1); pintarBandeja(); }
+  function pintarBandeja() {
+    $('bandeja').innerHTML = bandeja.map(function (f, i) {
+      return '<div class="mini"><img src="' + f.url + '" alt=""><span class="n">' + (i + 1) + '</span><button aria-label="Quitar foto" onclick="quitar(' + i + ')">×</button></div>';
+    }).join('');
+    $('vacia').classList.toggle('oculto', bandeja.length > 0);
+    var m = momentoActual(), lleno = bandeja.length >= MAX_LOTE;
+    $('btnFoto').disabled = !m || lleno; $('btnGaleria').disabled = !m || lleno;
+    $('btnEnviar').disabled = !m || bandeja.length < m.min;
+    $('btnEnviar').textContent = m && bandeja.length ? '✅ Enviar ' + MOMENTO + ' (' + bandeja.length + ' fotos)' : '✅ Enviar';
+  }
+
+  // ===== Cámara dentro de la app =====
+  var stream = null;
+  function abrirCamara() {
+    $('errorEnvio').textContent = '';
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { abrir('camFoto'); return; }
+    navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } })
+      .then(function (s) { stream = s; $('video').srcObject = s; $('visor').classList.remove('oculto'); pintarTira(); })
+      .catch(function () { $('errorEnvio').textContent = 'No se pudo abrir la cámara aquí. Se usará la cámara normal (una foto por vez).'; abrir('camFoto'); });
+  }
+  function disparar() {
+    var v = $('video'); if (!v.videoWidth || bandeja.length >= MAX_LOTE) return;
+    bandeja.push({ url: aCanvas(v, v.videoWidth, v.videoHeight), t: Date.now() });
+    var f = $('flash'); f.classList.add('on'); setTimeout(function () { f.classList.remove('on'); }, 60);
+    try { if (navigator.vibrate) navigator.vibrate(30); } catch (e) {}
+    pintarTira(); pintarBandeja();
+  }
+  function pintarTira() {
+    var m = momentoActual();
+    $('tira').innerHTML = bandeja.map(function (f) { return '<img src="' + f.url + '" alt="">'; }).join('');
+    $('tira').scrollLeft = 99999;
+    $('listoN').textContent = bandeja.length; $('listo').disabled = bandeja.length < m.min;
+    $('disparo').disabled = bandeja.length >= MAX_LOTE;
+    $('visorCuenta').textContent = MOMENTO + (bandeja.length ? ' · ' + bandeja.length + ' foto' + (bandeja.length === 1 ? '' : 's') : '');
+    $('guiaTip').textContent = MOMENTO === 'Ingreso' ? 'No olvides una foto de la guía' : '';
+  }
+  function cerrarCamara() {
+    if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+    $('video').srcObject = null; $('visor').classList.add('oculto');
+  }
+  function listoCamara() { cerrarCamara(); if (bandeja.length >= momentoActual().min) enviarLote(); }
+
+  // ===== Envío en segundo plano =====
+  var cola = [], seq = 0;
+  function hora() { var d = new Date(); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+  function enviarLote() {
+    var m = momentoActual();
+    if (!m) { $('errorEnvio').textContent = 'Elige qué vas a contar.'; return; }
+    if (bandeja.length < m.min) { $('errorEnvio').textContent = m.n === 'Ingreso' ? 'Falta la foto de los productos o de la guía.' : 'Falta al menos una foto.'; return; }
+    var job = { id: ++seq, hora: hora(), momento: MOMENTO, quien: QUIEN, fotos: bandeja.map(function (f) { return f.url; }), r: null };
+    cola.unshift(job); while (cola.length > 8) cola.pop();
+    bandeja = []; MOMENTO = null; $('ayuda').textContent = 'Primero elige qué vas a contar.';
+    pintarMomentos(); pintarBandeja(); lanzar(job); window.scrollTo(0, 0);
+  }
+  function lanzar(job) {
+    job.r = null; job.t0 = Date.now(); pintarCola();
+    servidor('procesarConteo', { pin: PIN, momento: job.momento, quien: job.quien, fotos: job.fotos.map(function (u) { return u.split(',')[1]; }) })
+      .then(function (j) { terminar(job, j.r || {}); actualizarEstado(); })
+      .catch(function (e) {
+        var msg = String(e && e.message || e);
+        if (msg.indexOf('PIN') >= 0) { ls('alanya_pin', null); mostrar('pantallaPin'); }
+        terminar(job, { error: true, mensaje: msg });
+      });
+  }
+  function terminar(job, r) {
+    job.r = r; if (!r.error) job.fotos = null;
+    if (r.error || (REVISION && r.estado !== 'OK')) avisar();
+    pintarCola();
+  }
+  function avisar() {
+    try {
+      var C = window.AudioContext || window.webkitAudioContext;
+      if (C) { var ctx = new C(); [0, .22, .44].forEach(function (d) { var o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = 660; o.connect(g); g.connect(ctx.destination);
+        g.gain.setValueAtTime(.0001, ctx.currentTime + d); g.gain.exponentialRampToValueAtTime(.3, ctx.currentTime + d + .02); g.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + d + .18);
+        o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + .2); }); }
+    } catch (e) {}
+    try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch (e) {}
+  }
+
+  function pintarCola() {
+    var pend = cola.filter(function (j) { return !j.r; }).length;
+    var html = cola.length ? '<div class="titulo"><span>Últimos envíos</span><span>' + (pend ? pend + ' enviando…' : 'al día') + '</span></div>' : '';
+    cola.forEach(function (j) {
+      var t = j.hora + ' · ' + j.momento;
+      if (!j.r) { html += '<div class="item" id="job' + j.id + '"><div class="fila"><span>' + t + '</span><span class="estado">⏫ Contando ' + Math.round((Date.now() - j.t0) / 1000) + ' s</span></div></div>'; return; }
+      if (j.r.error) {
+        var sinHoja = (j.r.mensaje || '').indexOf('archivo de hoy') >= 0;
+        html += '<div class="item rojo" id="job' + j.id + '"><div class="fila"><b>' + t + '</b><span class="estado">📶 No se envió</span></div><ul><li>' +
+          (sinHoja ? 'Todavía no existe la hoja de hoy. Avisa a administración.' : 'Revisa el internet y vuelve a intentar. Las fotos siguen aquí.') + '</li></ul>' +
+          '<div class="acciones"><button onclick="reintentar(' + j.id + ')">🔁 Reintentar</button><button class="suave" onclick="descartar(' + j.id + ')">Descartar</button></div></div>';
+        return;
+      }
+      if (!REVISION) { html += '<div class="item verde" id="job' + j.id + '"><div class="fila"><span>' + t + '</span><span class="estado">✓ Enviado</span></div></div>'; return; }
+      var ok = j.r.estado === 'OK', clase = ok ? 'verde' : (j.r.escrito ? 'ambar' : 'rojo');
+      html += '<div class="item ' + clase + '" id="job' + j.id + '"><div class="fila"><b>' + t + '</b><span class="estado">' +
+        (ok ? '✅ Registrado' : (j.r.escrito ? '🟡 Registrado, revisar' : '❌ Hay que revisar')) + '</span></div>';
+      if (j.r.alertas && j.r.alertas.length) html += '<ul>' + j.r.alertas.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>';
+      if (j.r.productos && j.r.productos.length) html += '<ul>' + j.r.productos.map(function (p) { return '<li>' + esc(p.nombre) + ': ' + p.cantidad + '</li>'; }).join('') + '</ul>';
+      if (!ok) html += '<p class="nota">Administración ya recibió el aviso. Si te preguntan, responde en el grupo.</p><div class="acciones"><button class="suave" onclick="descartar(' + j.id + ')">Entendido</button></div>';
+      html += '</div>';
+    });
+    $('cola').innerHTML = html; pintarAlerta();
+  }
+  function buscar(id) { return cola.filter(function (j) { return j.id === id; })[0]; }
+  function reintentar(id) { var j = buscar(id); if (j && j.fotos) lanzar(j); }
+  function descartar(id) { cola = cola.filter(function (j) { return j.id !== id; }); pintarCola(); }
+  function pintarAlerta() {
+    var malos = cola.filter(function (j) { return j.r && (j.r.error || (REVISION && j.r.estado !== 'OK' && !j.r.escrito)); });
+    var a = $('alerta');
+    if (!malos.length) { a.classList.add('oculto'); return; }
+    var j = malos[0];
+    a.innerHTML = (j.r.error ? '📶 Un envío no salió' : '❌ Un conteo no cuadra') + (malos.length > 1 ? ' (+' + (malos.length - 1) + ')' : '') +
+      '<small>' + (j.r.error ? 'Toca para reintentar' : 'Toca para ver') + '</small>';
+    a.dataset.id = j.id; a.classList.remove('oculto');
+  }
+  function irAlProblema() { var el = $('job' + $('alerta').dataset.id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+
+  setInterval(function () { if (cola.some(function (j) { return !j.r; })) pintarCola(); }, 1000);
+  iniciar();
+</script>
+</body>
+</html>
