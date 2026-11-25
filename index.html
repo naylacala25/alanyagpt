@@ -208,10 +208,18 @@
     }).catch(function () { err.textContent = 'Sin conexión. Intenta de nuevo.'; });
   }
   function pedirQuien() {
+    if (PIN && !pedirQuien.cargando) {
+      pedirQuien.cargando = true;
+      servidor('estadoDia', { pin: PIN }).then(function (j) {
+        if (j.r && j.r.equipo) { EQUIPO = j.r.equipo; ls('alanya_equipo', JSON.stringify(EQUIPO)); if (!QUIEN) pintarNombres(); }
+      }).catch(function () {}).then(function () { pedirQuien.cargando = false; });
+    }
+    pintarNombres(); mostrar('pantallaQuien');
+  }
+  function pintarNombres() {
     $('nombres').innerHTML = EQUIPO.concat(['Otra persona']).map(function (n) {
       return '<button class="opcion" onclick="elegirQuien(\'' + esc(n).replace(/'/g, '') + '\')">' + esc(n) + '</button>';
     }).join('');
-    mostrar('pantallaQuien');
   }
   function elegirQuien(n) {
     if (n === 'Otra persona') { n = (prompt('¿Cómo te llamas?') || '').trim(); if (!n) return; }
@@ -225,6 +233,7 @@
   function actualizarEstado() {
     servidor('estadoDia', { pin: PIN }).then(function (j) {
       HECHOS = j.r.hechos || [];
+      if (j.r.equipo) { EQUIPO = j.r.equipo; ls('alanya_equipo', JSON.stringify(EQUIPO)); }
       $('estadoHoy').textContent = j.r.existe ? HECHOS.length + ' de 5 hoy' : 'sin hoja de hoy';
       pintarMomentos();
     }).catch(function (e) { if (String(e.message).indexOf('PIN') >= 0) { ls('alanya_pin', null); mostrar('pantallaPin'); } });
