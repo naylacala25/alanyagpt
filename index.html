@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>AlanyaGPT</title>
+<title>Conteo Alanya</title>
 <meta name="theme-color" content="#3b2418">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="AlanyaGPT">
+<meta name="apple-mobile-web-app-title" content="Conteo Alanya">
 <link rel="icon" href="icon.png">
 <link rel="apple-touch-icon" href="icon.png">
 <style>
@@ -89,7 +89,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>🥐 AlanyaGPT</h1>
+  <h1>🥐 Conteo Alanya</h1>
   <div class="sub"><span>Alanya El Polo · Conteo por fotos</span><button id="btnQuien" class="oculto" onclick="cambiarQuien()"></button></div>
   <div id="alerta" class="alerta oculto" onclick="irAlProblema()"></div>
 
@@ -380,8 +380,9 @@
       if (!j.r) { html += '<div class="item" id="job' + j.id + '"><div class="fila"><span>' + t + '</span><span class="estado">⏫ Contando ' + Math.round((Date.now() - j.t0) / 1000) + ' s</span></div></div>'; return; }
       if (j.r.error) {
         var sinHoja = (j.r.mensaje || '').indexOf('archivo de hoy') >= 0;
-        html += '<div class="item rojo" id="job' + j.id + '"><div class="fila"><b>' + t + '</b><span class="estado">📶 No se envió</span></div><ul><li>' +
-          (sinHoja ? 'Todavía no existe la hoja de hoy. Avisa a administración.' : 'Revisa el internet y vuelve a intentar. Las fotos siguen aquí.') + '</li></ul>' +
+        html += '<div class="item rojo" id="job' + j.id + '"><div class="fila"><b>' + t + '</b><span class="estado">⚠️ No se registró</span></div><ul><li>' +
+          (sinHoja ? 'Todavía no existe la hoja de hoy. Avisa a administración.' : 'No se pudo registrar. Las fotos siguen aquí, vuelve a intentar.') + '</li>' +
+          '<li style="font-size:13px;color:#7a2a24">Detalle: ' + esc(j.r.mensaje || 'sin detalle') + '</li></ul>' +
           '<div class="acciones"><button onclick="reintentar(' + j.id + ')">🔁 Reintentar</button><button class="suave" onclick="descartar(' + j.id + ')">Descartar</button></div></div>';
         return;
       }
